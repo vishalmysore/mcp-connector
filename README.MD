@@ -40,6 +40,7 @@ Update your Claude Desktop tool configuration to use this Java connector:
   "timeout": 30000
 }
 ```
+For other types of connectors in python, shell , nodejs please read the [guide](article.MD) 
 
 ### 🚀 Why Use a Java Connector?
 - ✅ Language Independence

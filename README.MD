@@ -1,7 +1,8 @@
-# Java MCP Connector
+# Java MCP Connector  
 
 This is a **pure Java** implementation of a connector for the [MCP (Model Context Protocol)](https://github.com/tools4ai) protocol. It acts as a bridge between any MCP-compatible client (like Claude or OpenAI tools) and a standard HTTP backend (like a Spring Boot or Node.js server).
 You can use with [a2ajava](https://github.com/vishalmysore/a2ajava) which is pure java implementation of A2A protocol and works with MCP protocol as well .
+ 
 ---
 
 ## 🔧 How It Works

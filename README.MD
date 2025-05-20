@@ -5,6 +5,10 @@ You can use with [a2ajava](https://github.com/vishalmysore/a2ajava) which is pur
  
 ---
 
+<p align="center">
+  <img src="connector.png" width="400" alt="Connector Architecture">
+</p>
+
 ## 🔧 How It Works
 
 The connector acts as a **Passthrough Server**. It reads JSON-RPC 2.0 messages from `stdin`, forwards them as HTTP POSTs to a specified backend URL, and returns the HTTP response as the output to `stdout`.

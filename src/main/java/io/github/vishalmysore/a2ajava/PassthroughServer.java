@@ -3,16 +3,26 @@ package io.github.vishalmysore.a2ajava;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PassthroughServer {
-
+    /**
+     * This is for testing purposes only.
+     */
+    private static String username = null;
+    private static String password = null;
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) throws Exception {
         String targetUrl = args.length > 0 ? args[0] : "http://localhost:8080/invoke";
+        if (args.length > 2) {
+            username = args[1];
+            password = args[2];
+            System.err.println("🔑 Authentication credentials provided");
+        }
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String line;
 
@@ -61,6 +71,11 @@ public class PassthroughServer {
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         con.setRequestProperty("Connection", "keep-alive");
+        if (username != null && password != null) {
+            String auth = username + ":" + password;
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+            con.setRequestProperty("Authorization", "Basic " + encodedAuth);
+        }
         con.setDoOutput(true);
 
         try (OutputStream os = con.getOutputStream()) {

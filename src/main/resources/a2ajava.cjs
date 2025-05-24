@@ -2,6 +2,18 @@ const http = require("http");
 
 const targetUrl = process.argv[2] || "http://localhost:7860"; // Get URL from arguments
 const { hostname, port, pathname } = new URL(targetUrl);
+const username = process.argv[3] || null;
+const password = process.argv[4] || null;
+let authHeader = null;
+
+if (username && password) {
+  const base64Auth = Buffer.from(`${username}:${password}`).toString("base64");
+  authHeader = `Basic ${base64Auth}`;
+  console.error("🔑 Authentication enabled");
+}
+
+
+
 
 process.stdin.setEncoding("utf8");
 
@@ -42,17 +54,21 @@ function traceAndForward(line) {
 
     const json = JSON.parse(line);
     const postData = JSON.stringify(json);
+const headers = {
+  "Content-Type": "application/json",
+  "Content-Length": Buffer.byteLength(postData),
+  "Connection": "keep-alive",
+};
 
+if (authHeader) {
+  headers["Authorization"] = authHeader;
+}
     const options = {
       hostname,
       port,
       path: pathname || "/invoke",
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(postData),
-        "Connection": "keep-alive" // Explicitly keep the connection alive
-      },
+      headers,
     };
 
     const req = http.request(options, (res) => {

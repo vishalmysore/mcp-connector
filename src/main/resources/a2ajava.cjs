@@ -1,8 +1,9 @@
 const http = require("http");
 const https = require("https");
 
-const targetUrl = process.argv[2] || "http://localhost:7860"; // Get URL from arguments
-const { hostname, pathname, protocol } = new URL(targetUrl);
+const targetUrl = process.argv[2] || "http://localhost:7860"; // Get URL from args
+const { hostname, pathname, protocol, port } = new URL(targetUrl);
+
 const username = process.argv[3] || null;
 const password = process.argv[4] || null;
 
@@ -15,22 +16,22 @@ if (username && password) {
 }
 
 process.stdin.setEncoding("utf8");
+
 let buffer = "";
 
-// Keep-alive ping every 10 seconds
+// Keep-alive ping
 const keepAliveInterval = setInterval(() => {
   console.error("💓 Keep-alive ping...");
 }, 10000);
 
-// Graceful shutdown on SIGINT
-process.on('SIGINT', () => {
-  console.error("Received SIGINT. Shutting down gracefully...");
+// Graceful shutdown
+process.on("SIGINT", () => {
+  console.error("🛑 SIGINT received. Shutting down gracefully...");
   clearInterval(keepAliveInterval);
   process.exit(0);
 });
 
-// Handle unexpected errors without crashing
-process.on('uncaughtException', (err) => {
+process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught exception:", err);
 });
 
@@ -65,7 +66,8 @@ function traceAndForward(line) {
 
     const options = {
       hostname,
-      path: pathname || "/invoke",
+      port: port || (protocol === "https:" ? 443 : 80),
+      path: pathname || "/",
       method: "POST",
       headers,
     };
@@ -78,22 +80,21 @@ function traceAndForward(line) {
       res.on("data", (chunk) => (responseBody += chunk));
       res.on("end", () => {
         if (responseBody.trim() === "") {
-          console.warn("⚠️ Empty response body received (likely a JSON-RPC notification).");
+          console.warn("⚠️ Empty response body received (possibly a notification).");
           return;
         }
         try {
           console.error("➡️ Response from backend:\n" + responseBody);
           const response = JSON.parse(responseBody);
-          const finalResponse = JSON.stringify(response);
-          process.stdout.write(finalResponse + "\n");
+          process.stdout.write(JSON.stringify(response) + "\n");
         } catch (e) {
-          console.error("❌ Failed to parse response from backend:", e.message);
+          console.error("❌ Failed to parse response:", e.message);
           const errorResponse = {
             jsonrpc: "2.0",
             id: json.id || null,
             error: {
               code: -32603,
-              message: "Internal error processing response: " + e.message,
+              message: "Response parse error: " + e.message,
             },
           };
           process.stdout.write(JSON.stringify(errorResponse) + "\n");
@@ -102,13 +103,13 @@ function traceAndForward(line) {
     });
 
     req.on("error", (e) => {
-      console.error("❌ Request error to backend:", e.message);
+      console.error("❌ Request error:", e.message);
       const errorResponse = {
         jsonrpc: "2.0",
         id: json.id || null,
         error: {
           code: -32603,
-          message: "Failed to connect to backend: " + e.message,
+          message: "Request error: " + e.message,
         },
       };
       process.stdout.write(JSON.stringify(errorResponse) + "\n");
@@ -117,7 +118,7 @@ function traceAndForward(line) {
     req.write(postData);
     req.end();
   } catch (e) {
-    console.error("❌ Invalid JSON from client:", e.message);
+    console.error("❌ Invalid JSON input:", e.message);
     const errorResponse = {
       jsonrpc: "2.0",
       id: null,

@@ -40,6 +40,21 @@ Update your Claude Desktop tool configuration to use this Java connector:
   "timeout": 30000
 }
 ```
+or with username 
+
+```
+,"laundry": {
+  "command": "java",
+  "args": [    
+    "-jar",
+    "/work/a2a-mcp-bridge/target/mcp-connector-full.jar",
+    "http://localhost:7860/" ,"user","password"
+  ],
+  "timeout": 30000
+} 
+```
+
+
 For other types of connectors in python, shell , nodejs please read the [guide](article.MD) 
 
 ### 🚀 Why Use a Java Connector?
